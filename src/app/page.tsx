@@ -1,12 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { X, Skull, Flame, Zap } from 'lucide-react'
+import { X, Skull, Flame, Zap, Sun, Moon } from 'lucide-react'
 
 export default function Home() {
   const [skulls, setSkulls] = useState<Array<{ id: number; left: number; delay: number; size: number }>>([])
   const [clickX, setClickX] = useState<Array<{ id: number; x: number; y: number }>>([])
   const [showMessage, setShowMessage] = useState(false)
+  const [isDarkMode, setIsDarkMode] = useState(true)
 
   useEffect(() => {
     // Generate floating skulls
@@ -23,6 +24,9 @@ export default function Home() {
   }, [])
 
   const handleClick = (e: React.MouseEvent) => {
+    // Don't trigger on toggle button click
+    if ((e.target as HTMLElement).closest('.toggle-btn')) return
+    
     const newX = {
       id: Date.now(),
       x: e.clientX,
@@ -34,14 +38,36 @@ export default function Home() {
     }, 800)
   }
 
+  const toggleMode = () => {
+    setIsDarkMode(!isDarkMode)
+  }
+
   return (
     <div 
-      className="min-h-screen relative overflow-hidden cursor-pointer"
+      className="min-h-screen relative overflow-hidden cursor-pointer transition-all duration-500"
       style={{
-        background: 'linear-gradient(135deg, #0a0a0a 0%, #1a0505 30%, #2d0a0a 50%, #0a0a0a 100%)'
+        background: isDarkMode 
+          ? 'linear-gradient(135deg, #0a0a0a 0%, #1a0505 30%, #2d0a0a 50%, #0a0a0a 100%)'
+          : 'linear-gradient(135deg, #ffffff 0%, #f0f0f0 30%, #ffe0e0 50%, #ffffff 100%)'
       }}
       onClick={handleClick}
     >
+      {/* Toggle Button */}
+      <button 
+        onClick={toggleMode}
+        className="toggle-btn fixed top-4 right-4 z-50 p-3 rounded-full transition-all duration-300 hover:scale-110"
+        style={{
+          background: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+          border: isDarkMode ? '2px solid rgba(255,0,0,0.3)' : '2px solid rgba(200,0,0,0.2)',
+        }}
+      >
+        {isDarkMode ? (
+          <Sun className="w-6 h-6 text-yellow-400" />
+        ) : (
+          <Moon className="w-6 h-6 text-gray-700" />
+        )}
+      </button>
+
       {/* Animated Background Skulls */}
       {skulls.map(skull => (
         <div
@@ -55,8 +81,11 @@ export default function Home() {
           }}
         >
           <Skull
-            className="text-red-900/30"
-            style={{ width: skull.size, height: skull.size }}
+            style={{ 
+              width: skull.size, 
+              height: skull.size,
+              color: isDarkMode ? 'rgba(139, 0, 0, 0.3)' : 'rgba(200, 100, 100, 0.4)'
+            }}
           />
         </div>
       ))}
@@ -69,7 +98,8 @@ export default function Home() {
           style={{ left: mark.x, top: mark.y, transform: 'translate(-50%, -50%)' }}
         >
           <X
-            className="w-10 h-10 text-red-500"
+            className="w-10 h-10"
+            style={{ color: isDarkMode ? '#ef4444' : '#dc2626' }}
             strokeWidth={3}
           />
         </div>
@@ -85,7 +115,7 @@ export default function Home() {
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
               animationDelay: `${Math.random() * 4}s`,
-              color: 'rgba(255, 0, 0, 0.4)',
+              color: isDarkMode ? 'rgba(255, 0, 0, 0.4)' : 'rgba(220, 50, 50, 0.5)',
               width: Math.random() * 20 + 10,
               height: Math.random() * 20 + 10,
             }}
@@ -103,7 +133,7 @@ export default function Home() {
               left: `${i * 10 + Math.random() * 5}%`,
               bottom: '-20px',
               animationDelay: `${Math.random() * 2}s`,
-              color: 'rgba(255, 50, 0, 0.6)',
+              color: isDarkMode ? 'rgba(255, 50, 0, 0.6)' : 'rgba(255, 80, 30, 0.5)',
               width: Math.random() * 30 + 20,
               height: Math.random() * 40 + 30,
             }}
@@ -117,12 +147,14 @@ export default function Home() {
         <div className={`transition-all duration-1000 ${showMessage ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`}>
           <div className="relative">
             <X
-              className="w-32 h-32 md:w-48 md:h-48 text-red-600 animate-shake"
+              className="w-32 h-32 md:w-48 md:h-48 animate-shake"
+              style={{ color: isDarkMode ? '#dc2626' : '#b91c1c' }}
               strokeWidth={3}
             />
             <div className="absolute inset-0 flex items-center justify-center">
               <Skull
-                className="w-16 h-16 md:w-24 md:h-24 text-red-800 animate-glow"
+                className="w-16 h-16 md:w-24 md:h-24 animate-glow"
+                style={{ color: isDarkMode ? '#991b1b' : '#7f1d1d' }}
               />
             </div>
           </div>
@@ -130,13 +162,29 @@ export default function Home() {
 
         {/* Text */}
         <div className={`mt-8 text-center transition-all duration-1000 delay-300 ${showMessage ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold bg-gradient-to-r from-red-600 via-red-500 to-orange-600 bg-clip-text text-transparent animate-text-shadow">
+          <h1 
+            className="text-5xl md:text-7xl lg:text-8xl font-bold animate-text-shadow"
+            style={{
+              background: isDarkMode 
+                ? 'linear-gradient(to right, #dc2626, #ef4444, #f97316)'
+                : 'linear-gradient(to right, #b91c1c, #dc2626, #ea580c)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+            }}
+          >
             I HATE YOU
           </h1>
-          <p className="mt-6 text-xl md:text-2xl text-red-400/70 font-bold tracking-widest uppercase">
+          <p 
+            className="mt-6 text-xl md:text-2xl font-bold tracking-widest uppercase"
+            style={{ color: isDarkMode ? 'rgba(248, 113, 113, 0.7)' : 'rgba(185, 28, 28, 0.8)' }}
+          >
             💀 Stay Away From Me 💀
           </p>
-          <div className="mt-8 flex items-center justify-center gap-2 text-red-600/50">
+          <div 
+            className="mt-8 flex items-center justify-center gap-2"
+            style={{ color: isDarkMode ? 'rgba(239, 68, 68, 0.5)' : 'rgba(153, 27, 27, 0.5)' }}
+          >
             <X className="w-5 h-5" />
             <span className="text-sm uppercase tracking-wider">Click anywhere for more hatred</span>
             <X className="w-5 h-5" />
